@@ -1,0 +1,542 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { 
+  CheckCircle2, 
+  XCircle, 
+  ChevronDown, 
+  ChevronUp, 
+  Clock, 
+  MonitorPlay, 
+  Zap, 
+  BookOpen, 
+  MessageSquare,
+  ArrowLeft,
+  ShieldCheck,
+  Sparkles
+} from 'lucide-react';
+
+// --- Intersection Observer Hook for Elegant Reveals ---
+const useScrollReveal = () => {
+  useEffect(() => {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('revealed');
+        }
+      });
+    }, { threshold: 0.1, rootMargin: "0px 0px -50px 0px" });
+
+    document.querySelectorAll('.reveal-on-scroll').forEach((el) => {
+      observer.observe(el);
+    });
+
+    return () => observer.disconnect();
+  }, []);
+};
+
+// --- Neural Canvas Background Component (Fixed, Smooth, Coral Network) ---
+const NeuralCanvas = () => {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    
+    let W = window.innerWidth;
+    let H = window.innerHeight;
+    canvas.width = W;
+    canvas.height = H;
+    
+    const particles = [];
+    // More particles on desktop, fewer on mobile
+    const particleCount = W > 768 ? 70 : 35;
+    
+    // Initialize particles
+    for (let i = 0; i < particleCount; i++) {
+      particles.push({
+        x: Math.random() * W,
+        y: Math.random() * H,
+        vx: (Math.random() - 0.5) * 0.6,
+        vy: (Math.random() - 0.5) * 0.6,
+        radius: Math.random() * 2 + 1,
+      });
+    }
+
+    let animationFrameId;
+
+    const draw = () => {
+      ctx.clearRect(0, 0, W, H);
+      
+      for (let i = 0; i < particleCount; i++) {
+        let p = particles[i];
+        
+        // Move particles
+        p.x += p.vx;
+        p.y += p.vy;
+        
+        // Bounce off edges
+        if (p.x < 0 || p.x > W) p.vx *= -1;
+        if (p.y < 0 || p.y > H) p.vy *= -1;
+        
+        // Draw Particle (Pink/Coral)
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(236, 72, 153, 0.5)'; // Pink-500 with opacity
+        ctx.fill();
+        
+        // Draw connecting lines
+        for (let j = i + 1; j < particleCount; j++) {
+          let p2 = particles[j];
+          let dist = Math.sqrt(Math.pow(p.x - p2.x, 2) + Math.pow(p.y - p2.y, 2));
+          
+          if (dist < 180) {
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(p2.x, p2.y);
+            // Opacity scales with distance. Closer = more opaque
+            const opacity = 0.25 - (dist / 180) * 0.25;
+            ctx.strokeStyle = `rgba(249, 115, 22, ${opacity})`; // Orange-500
+            ctx.lineWidth = 1;
+            ctx.stroke();
+          }
+        }
+      }
+      animationFrameId = requestAnimationFrame(draw);
+    };
+
+    draw();
+
+    const handleResize = () => {
+      W = window.innerWidth;
+      H = window.innerHeight;
+      canvas.width = W;
+      canvas.height = H;
+    };
+
+    window.addEventListener('resize', handleResize);
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, []);
+
+  return (
+    <canvas 
+      ref={canvasRef} 
+      className="fixed top-0 left-0 w-full h-full z-0 pointer-events-none"
+    />
+  );
+};
+
+// --- Main Page Component ---
+const PremiumLandingPage = () => {
+  useScrollReveal();
+  const [openFaq, setOpenFaq] = useState(null);
+
+  const toggleFaq = (index) => {
+    setOpenFaq(openFaq === index ? null : index);
+  };
+
+  // TODO: Replace with actual payment page URL
+  const PAYMENT_LINK = "#"; 
+
+  return (
+    <div dir="rtl" className="font-sans bg-white text-slate-800 min-h-screen selection:bg-pink-500/20 selection:text-slate-900 overflow-x-hidden relative">
+      
+      {/* Live Neural Network Background */}
+      <NeuralCanvas />
+
+      {/* Global Styles for Reveal Animations */}
+      <style dangerouslySetInnerHTML={{__html: `
+        .reveal-on-scroll { opacity: 0; transform: translateY(30px); transition: all 0.8s cubic-bezier(0.19, 1, 0.22, 1); }
+        .reveal-on-scroll.revealed { opacity: 1; transform: translateY(0); }
+        .glass-card { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(236, 72, 153, 0.1); }
+        .glass-card:hover { border-color: rgba(236, 72, 153, 0.3); box-shadow: 0 10px 40px -10px rgba(236,72,153,0.1); }
+        .text-gradient { background: linear-gradient(135deg, #ec4899, #f97316); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+      `}} />
+
+      {/* Header */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-100 transition-all shadow-sm">
+        <div className="max-w-6xl mx-auto px-6 h-20 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-[140px] md:w-[160px] flex items-center justify-center">
+              <img src="https://files.cdn-files-a.com/uploads/9287380/400_filter_nobg_67641e43ebf52.png" alt="הנדית HANDY'T" className="w-full object-contain" />
+            </div>
+          </div>
+          <a href="#register" className="hidden md:flex items-center gap-2 bg-pink-50 hover:bg-pink-100 border border-pink-100 px-5 py-2 rounded-full text-sm font-bold transition-all text-pink-600">
+            הבטיחי את מקומך
+          </a>
+        </div>
+      </header>
+
+      {/* HERO SECTION */}
+      <section className="relative pt-36 pb-16 md:pt-48 md:pb-24 px-6 min-h-[85vh] flex items-center z-10">
+        <div className="max-w-5xl mx-auto text-center reveal-on-scroll">
+          
+          {/* Main Logo in Hero (Optional since it's in header, but kept to emphasize branding) */}
+          <div className="w-[240px] md:w-[320px] mx-auto mb-10">
+            <img src="https://files.cdn-files-a.com/uploads/9287380/400_filter_nobg_67641e43ebf52.png" alt="הנדית HANDY'T" className="w-full object-contain drop-shadow-sm" />
+          </div>
+
+          <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white shadow-sm border border-pink-100 text-pink-600 text-sm font-bold mb-8">
+            <Sparkles className="w-4 h-4" /> סדנת זום ממוקדת
+          </div>
+          
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-black mb-6 leading-[1.1] tracking-tight text-slate-900">
+            אני שולטת במקדחה.<br/>
+            טל שולט ב-AI.<br/>
+            <span className="text-gradient">אז החלטנו לחבר כוחות.</span>
+          </h1>
+          
+          <p className="text-lg md:text-2xl text-slate-600 mb-10 max-w-3xl mx-auto font-light leading-relaxed">
+            שתי סדנאות זום פרקטיות שילמדו אותך להשתמש בבינה מלאכותית כדי לעבוד חכם יותר, ליצור מהר יותר — <span className="font-bold text-slate-900 border-b-2 border-pink-400 pb-0.5">גם בלי להיות "טכנולוגית".</span>
+          </p>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-6 mb-12">
+            <div className="flex items-center gap-2 text-slate-700 font-medium bg-white shadow-sm border border-slate-100 px-4 py-2 rounded-lg">
+              <XCircle className="w-5 h-5 text-pink-500" /> לא הרצאה על העתיד
+            </div>
+            <div className="flex items-center gap-2 text-slate-700 font-medium bg-white shadow-sm border border-slate-100 px-4 py-2 rounded-lg">
+              <XCircle className="w-5 h-5 text-pink-500" /> לא מילים גדולות
+            </div>
+            <div className="flex items-center gap-2 text-slate-700 font-medium bg-white shadow-sm border border-slate-100 px-4 py-2 rounded-lg">
+              <XCircle className="w-5 h-5 text-pink-500" /> בלי ידע קודם
+            </div>
+          </div>
+
+          <a href="#register" className="inline-flex items-center justify-center gap-3 bg-gradient-to-r from-pink-500 to-orange-500 text-white text-xl font-bold py-4 px-10 rounded-2xl transition-all hover:-translate-y-1 hover:shadow-lg hover:shadow-pink-500/30">
+            אני רוצה להצטרף
+            <ArrowLeft className="w-6 h-6" />
+          </a>
+          <p className="mt-5 text-pink-600 font-bold tracking-wide">לעוקבות של הנדית בלבד: שלמי כפי יכולתך</p>
+        </div>
+      </section>
+
+      {/* WHO IS IT FOR */}
+      <section className="py-20 md:py-24 px-6 max-w-6xl mx-auto z-10 relative">
+        <div className="grid md:grid-cols-2 gap-12 md:gap-16 items-center">
+          <div className="reveal-on-scroll order-2 md:order-1">
+            <div className="inline-flex items-center gap-2 text-pink-500 font-bold mb-4 uppercase tracking-wider text-sm">
+              <ShieldCheck className="w-4 h-4" /> קהל יעד
+            </div>
+            <h2 className="text-3xl md:text-5xl font-black mb-6 leading-tight text-slate-900">
+              הגיע הזמן להפסיק <br/><span className="text-slate-400">להרגיש מאחור.</span>
+            </h2>
+            <p className="text-lg text-slate-600 mb-8 leading-relaxed">
+              אם את עצמאית, שכירה, יוצרת תוכן, בעלת עסק, מנהלת, אמא עסוקה או פשוט אישה שרוצה לעבוד חכם יותר — הסדנה הזאת בשבילך.
+            </p>
+            
+            <div className="space-y-4">
+              <div className="flex items-start gap-4 glass-card p-4 md:p-5 rounded-2xl transition-all">
+                <div className="bg-pink-50 p-2 rounded-lg mt-0.5"><CheckCircle2 className="w-5 h-5 text-pink-500" /></div>
+                <p className="font-medium text-slate-800 leading-tight md:leading-normal">לא צריך ידע קודם או להבין בטכנולוגיה.</p>
+              </div>
+              <div className="flex items-start gap-4 glass-card p-4 md:p-5 rounded-2xl transition-all">
+                <div className="bg-pink-50 p-2 rounded-lg mt-0.5"><CheckCircle2 className="w-5 h-5 text-pink-500" /></div>
+                <p className="font-medium text-slate-800 leading-tight md:leading-normal">לא צריך לדעת "לדבר עם מחשבים".</p>
+              </div>
+              <div className="flex items-start gap-4 bg-gradient-to-br from-pink-50 to-orange-50 border border-pink-200 p-4 md:p-5 rounded-2xl transition-all shadow-sm">
+                <div className="bg-pink-500 p-2 rounded-lg mt-0.5"><Zap className="w-5 h-5 text-white" /></div>
+                <p className="font-bold text-pink-900 leading-tight md:leading-normal">צריך רק סקרנות, מחשב פתוח ורצון ללמוד כלים שיחסכו לך שעות.</p>
+              </div>
+            </div>
+          </div>
+          <div className="relative reveal-on-scroll order-1 md:order-2 max-w-sm mx-auto md:max-w-none w-full">
+            <div className="absolute inset-0 bg-gradient-to-tr from-pink-200 to-orange-200 rounded-[2rem] transform rotate-3 scale-105 opacity-50"></div>
+            {/* Karin's Image */}
+            <img 
+              src="https://karin-handyt.co.il/wp-content/uploads/2025/06/%D7%A2%D7%95%D7%AA%D7%A7-%D7%A9%D7%9C-%D7%A2%D7%95%D7%AA%D7%A7-%D7%A9%D7%9C-DSC_4018.webp" 
+              alt="קרין קקון - הנדית" 
+              className="relative z-10 rounded-[2rem] shadow-xl object-cover aspect-square md:aspect-[4/5] md:h-[500px] w-full border border-white"
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* THE PROBLEM */}
+      <section className="py-20 md:py-24 px-6 relative overflow-hidden z-10 bg-slate-50/80 backdrop-blur-sm border-y border-slate-100">
+        <div className="max-w-5xl mx-auto text-center reveal-on-scroll">
+          <h2 className="text-3xl md:text-5xl font-black mb-12 md:mb-16 text-slate-900">כולם מדברים על AI, <br className="md:hidden"/><span className="text-slate-400">אבל בפועל...</span></h2>
+          
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6 mb-14 text-right">
+            <div className="glass-card p-6 md:p-8 rounded-3xl relative overflow-hidden group">
+              <div className="w-12 h-12 md:w-14 md:h-14 bg-white rounded-2xl flex items-center justify-center mb-6 shadow-sm border border-slate-100">
+                <span className="text-2xl md:text-3xl">🤷‍♀️</span>
+              </div>
+              <h3 className="font-bold text-xl md:text-2xl mb-2 text-slate-900">פותחות צ'אט</h3>
+              <p className="text-slate-600 leading-relaxed text-sm md:text-base">פותחים ChatGPT ולא יודעים מה לכתוב או איך לבקש את מה שבאמת צריך.</p>
+            </div>
+            <div className="glass-card p-6 md:p-8 rounded-3xl relative overflow-hidden group">
+              <div className="w-12 h-12 md:w-14 md:h-14 bg-white rounded-2xl flex items-center justify-center mb-6 shadow-sm border border-slate-100">
+                <span className="text-2xl md:text-3xl">🤯</span>
+              </div>
+              <h3 className="font-bold text-xl md:text-2xl mb-2 text-slate-900">עומס כלים</h3>
+              <p className="text-slate-600 leading-relaxed text-sm md:text-base">שומעים על עשרות כלים חדשים כל יום ולא מבינים מה באמת עוזר ביומיום.</p>
+            </div>
+            <div className="glass-card p-6 md:p-8 rounded-3xl relative overflow-hidden group sm:col-span-2 md:col-span-1">
+              <div className="w-12 h-12 md:w-14 md:h-14 bg-white rounded-2xl flex items-center justify-center mb-6 shadow-sm border border-slate-100">
+                <span className="text-2xl md:text-3xl">⏳</span>
+              </div>
+              <h3 className="font-bold text-xl md:text-2xl mb-2 text-slate-900">הפער גדל</h3>
+              <p className="text-slate-600 leading-relaxed text-sm md:text-base">מרגישות שמי שיודעת להשתמש בזה עוקפת אותנו, חוסכת שעות ויוצרת יותר.</p>
+            </div>
+          </div>
+          
+          <div className="inline-block p-1 rounded-full bg-gradient-to-r from-pink-500 to-orange-500 shadow-md mx-4 md:mx-0">
+            <div className="bg-white px-6 py-4 md:px-8 md:py-4 rounded-full">
+              <p className="text-lg md:text-xl font-bold text-pink-900">המטרה: להפוך AI למשהו פרקטי שנכנס לחיים כבר מחר.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* SYLLABUS / MODULES */}
+      <section className="py-20 md:py-24 px-6 max-w-6xl mx-auto z-10 relative">
+        <div className="text-center mb-16 md:mb-20 reveal-on-scroll">
+          <h2 className="text-3xl md:text-5xl font-black mb-4 md:mb-6 text-slate-900">מה תקבלי <span className="text-gradient">בסדרה?</span></h2>
+          <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto font-light">
+            שני מפגשים ממוקדים שבהם תלמדי לעבוד עם שתי פלטפורמות מרכזיות. בלי תיאוריה, רק פרקטיקה.
+          </p>
+        </div>
+
+        <div className="grid lg:grid-cols-2 gap-8 md:gap-10">
+          {/* Module 1 */}
+          <div className="glass-card rounded-[2rem] p-8 md:p-10 relative overflow-hidden reveal-on-scroll">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-pink-100 rounded-bl-full -z-10 opacity-50"></div>
+            
+            <div className="inline-flex items-center gap-2 text-pink-600 font-bold bg-pink-50 px-4 py-2 rounded-xl mb-6 text-sm md:text-base">
+              <BookOpen className="w-5 h-5" /> מפגש 1
+            </div>
+            
+            <h3 className="text-2xl md:text-3xl font-black mb-4 leading-tight text-slate-900">
+              NotebookLM: <br className="hidden md:block"/><span className="text-slate-500">סדר בברדק המחשבתי</span>
+            </h3>
+            
+            <p className="text-slate-600 mb-6 font-light text-base md:text-lg pb-6 border-b border-slate-100">
+              איך להפוך מקורות מידע גדולים (ספרים, מאמרים, מסמכים ותמלולים) לתובנות ותוצרים ברורים תוך דקות.
+            </p>
+            
+            <ul className="space-y-3 mb-8">
+              <li className="flex items-start gap-3"><CheckCircle2 className="w-5 h-5 text-pink-500 mt-0.5 shrink-0" /> <span className="text-slate-700">לסכם עשרות עמודים לפסקה ברורה אחת</span></li>
+              <li className="flex items-start gap-3"><CheckCircle2 className="w-5 h-5 text-pink-500 mt-0.5 shrink-0" /> <span className="text-slate-700">לשלוף נתונים ספציפיים מתוך חוזים ארוכים</span></li>
+              <li className="flex items-start gap-3"><CheckCircle2 className="w-5 h-5 text-pink-500 mt-0.5 shrink-0" /> <span className="text-slate-700">לבנות מאגר ידע אישי ועסקי חכם</span></li>
+            </ul>
+            
+            <div className="bg-pink-50 border border-pink-100 p-4 rounded-xl text-pink-800 font-medium text-sm md:text-base text-center md:text-right">
+              התוצאה: תפסיקי לטבוע במידע ותלמדי הרבה יותר מהר.
+            </div>
+          </div>
+
+          {/* Module 2 */}
+          <div className="glass-card rounded-[2rem] p-8 md:p-10 relative overflow-hidden reveal-on-scroll">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-orange-100 rounded-bl-full -z-10 opacity-50"></div>
+            
+            <div className="inline-flex items-center gap-2 text-orange-600 font-bold bg-orange-50 px-4 py-2 rounded-xl mb-6 text-sm md:text-base">
+              <MessageSquare className="w-5 h-5" /> מפגש 2
+            </div>
+            
+            <h3 className="text-2xl md:text-3xl font-black mb-4 leading-tight text-slate-900">
+              ChatGPT: <br className="hidden md:block"/><span className="text-slate-500">העוזר האישי שלך</span>
+            </h3>
+            
+            <p className="text-slate-600 mb-6 font-light text-base md:text-lg pb-6 border-b border-slate-100">
+              איך לגרום לו להבין אותך, את הסגנון שלך ואת המטרות שלך, ולא סתם לכתוב "תכתוב לי פוסט".
+            </p>
+            
+            <ul className="space-y-3 mb-8">
+              <li className="flex items-start gap-3"><CheckCircle2 className="w-5 h-5 text-orange-500 mt-0.5 shrink-0" /> <span className="text-slate-700">לכתוב פרומפטים מדוייקים שמביאים תוצאות</span></li>
+              <li className="flex items-start gap-3"><CheckCircle2 className="w-5 h-5 text-orange-500 mt-0.5 shrink-0" /> <span className="text-slate-700">לשכפל את סגנון הכתיבה הייחודי שלך</span></li>
+              <li className="flex items-start gap-3"><CheckCircle2 className="w-5 h-5 text-orange-500 mt-0.5 shrink-0" /> <span className="text-slate-700">לפתח רעיונות ולשפר תוצרים קיימים</span></li>
+            </ul>
+            
+            <div className="bg-orange-50 border border-orange-100 p-4 rounded-xl text-orange-800 font-medium text-sm md:text-base text-center md:text-right">
+              התוצאה: תוצרים מקצועיים בלי לאבד את האישיות שלך.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* THE OFFER (Grand Slam) */}
+      <section className="py-20 md:py-24 px-6 max-w-5xl mx-auto z-10 relative reveal-on-scroll">
+        <div className="rounded-[2.5rem] p-1 bg-gradient-to-br from-pink-400 via-orange-400 to-pink-500 shadow-xl">
+          <div className="bg-white rounded-[2.4rem] p-8 md:p-14 text-center">
+            <h2 className="text-3xl md:text-5xl font-black mb-6 md:mb-8 text-slate-900">מה הערך של הסדנה?</h2>
+            
+            <div className="mb-10">
+              <p className="text-slate-500 text-lg md:text-xl line-through mb-2 font-light">שווי ההשתתפות ב-2 המפגשים: 450 ש״ח</p>
+              <p className="text-xl md:text-2xl text-slate-800 font-medium">אבל לעוקבות של הנדית זה ניתן במודל:</p>
+            </div>
+
+            <div className="inline-block relative mb-12 transform -rotate-2">
+              <div className="absolute inset-0 bg-pink-500 blur-xl opacity-20"></div>
+              <div className="relative bg-gradient-to-r from-pink-500 to-orange-500 text-white text-3xl md:text-6xl font-black py-4 px-8 md:py-6 md:px-12 rounded-2xl md:rounded-3xl shadow-lg border border-white/20 whitespace-nowrap">
+                שלמי כפי יכולתך
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto mb-8">
+              <div className="flex flex-col items-center p-4 bg-slate-50 rounded-xl border border-slate-100">
+                <CheckCircle2 className="w-6 h-6 md:w-8 md:h-8 text-pink-500 mb-2" />
+                <span className="font-bold text-slate-800">בלי מחיר קבוע</span>
+              </div>
+              <div className="flex flex-col items-center p-4 bg-slate-50 rounded-xl border border-slate-100">
+                <CheckCircle2 className="w-6 h-6 md:w-8 md:h-8 text-pink-500 mb-2" />
+                <span className="font-bold text-slate-800">בלי חסם כניסה</span>
+              </div>
+              <div className="flex flex-col items-center p-4 bg-slate-50 rounded-xl border border-slate-100">
+                <CheckCircle2 className="w-6 h-6 md:w-8 md:h-8 text-pink-500 mb-2" />
+                <span className="font-bold text-slate-800">הכל פתוח בשבילך</span>
+              </div>
+            </div>
+
+            <p className="text-base md:text-xl text-slate-600 font-light max-w-2xl mx-auto leading-relaxed">
+              המטרה היא לאפשר לכמה שיותר נשים להיכנס לעולם הזה בצורה נעימה, נגישה ופרקטית. <strong className="text-slate-900">את בוחרת את הסכום שמתאים לך.</strong>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* INSTRUCTOR */}
+      <section className="py-20 md:py-24 border-y border-slate-100 bg-white/80 backdrop-blur-sm z-10 relative">
+        <div className="max-w-5xl mx-auto px-6 grid md:grid-cols-5 gap-12 md:gap-16 items-center reveal-on-scroll">
+          <div className="md:col-span-2 relative max-w-[280px] mx-auto md:max-w-none w-full">
+            <div className="aspect-square md:aspect-[4/5] rounded-[2rem] overflow-hidden shadow-lg relative z-10 border border-slate-100">
+              {/* Tal's Image */}
+              <img src="https://res.cloudinary.com/dhzuwoech/image/upload/v1770577527/unnamed_hmkldf.jpg" alt="טל חקוקי" className="w-full h-full object-cover" />
+            </div>
+            <div className="absolute -bottom-4 -left-4 bg-gradient-to-r from-pink-500 to-orange-500 text-white px-5 py-2 rounded-xl font-bold shadow-md z-20 transform -rotate-3 text-sm md:text-base">
+              המרצה (ובעלי ☺️)
+            </div>
+          </div>
+          <div className="md:col-span-3 text-center md:text-right">
+            <div className="inline-flex items-center gap-2 text-pink-500 font-bold mb-3 uppercase tracking-wider text-xs md:text-sm">
+              מי מנחה
+            </div>
+            <h2 className="text-3xl md:text-4xl font-black mb-2 text-slate-900">טל חקוקי</h2>
+            <p className="text-lg md:text-xl text-pink-600 font-medium mb-6">
+              Head of GenAI במרכז חדשנות כנרת.
+            </p>
+            <p className="text-base md:text-lg text-slate-600 mb-6 font-light leading-relaxed">
+              טל הכשיר אלפי משתתפים ממאות ארגונים בתהליכי אימוץ והטמעה של בינה מלאכותית. הוא מלמד איך להפוך את הכלים האלה ממשהו מרשים אבל מבלבל — לכלי עבודה יומיומי, בטוח ופרקטי.
+            </p>
+            <blockquote className="border-r-4 border-pink-500 pr-5 text-slate-800 font-medium text-base md:text-lg bg-pink-50/50 p-5 rounded-l-xl italic text-right">
+              "הגישה שלי פשוטה: אני לא מלמד כלים בשביל לדבר על טכנולוגיה. הפוקוס הוא על תרגום ה-AI לתוצאות ממשיות וחיסכון בזמן."
+            </blockquote>
+          </div>
+        </div>
+      </section>
+
+      {/* TAL'S LECTURE IMAGE STRIP */}
+      <section className="py-16 md:py-24 z-10 relative">
+         <div className="max-w-5xl mx-auto px-6 reveal-on-scroll">
+            <div className="rounded-[1.5rem] md:rounded-[2.5rem] overflow-hidden shadow-xl border border-slate-100 bg-white">
+               {/* Tal's Lecture Image */}
+               <img src="https://res.cloudinary.com/dhzuwoech/image/upload/v1770584538/580669370_10239655425541264_8727551209985263451_n_ttstau.jpg" alt="טל חקוקי בהרצאה" className="w-full aspect-video max-h-[250px] md:max-h-[450px] object-cover object-top" />
+            </div>
+         </div>
+      </section>
+
+      {/* LOGISTICS STRIP */}
+      <section className="py-10 md:py-12 border-y border-slate-100 bg-slate-50/80 backdrop-blur-sm z-10 relative">
+        <div className="max-w-5xl mx-auto px-6">
+          <div className="flex flex-col md:flex-row justify-center gap-8 md:gap-16">
+            <div className="flex items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-slate-100 w-full md:w-auto">
+              <div className="bg-pink-50 p-3 rounded-lg text-pink-500"><MonitorPlay className="w-6 h-6 md:w-8 md:h-8" /></div>
+              <div>
+                <p className="font-bold text-lg md:text-xl text-slate-900">2 מפגשי זום</p>
+                <p className="text-slate-500 text-xs md:text-sm mt-0.5">חיים ומוקלטים</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-slate-100 w-full md:w-auto">
+              <div className="bg-orange-50 p-3 rounded-lg text-orange-500"><Clock className="w-6 h-6 md:w-8 md:h-8" /></div>
+              <div>
+                <p className="font-bold text-lg md:text-xl text-slate-900">שעה וחצי</p>
+                <p className="text-slate-500 text-xs md:text-sm mt-0.5">אורך כל מפגש</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-slate-100 w-full md:w-auto">
+              <div className="bg-pink-50 p-3 rounded-lg text-pink-500"><Zap className="w-6 h-6 md:w-8 md:h-8" /></div>
+              <div>
+                <p className="font-bold text-lg md:text-xl text-slate-900">התנסות מעשית</p>
+                <p className="text-slate-500 text-xs md:text-sm mt-0.5">הדרכה בגובה העיניים</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="py-20 md:py-24 px-6 max-w-3xl mx-auto z-10 relative reveal-on-scroll">
+        <h2 className="text-3xl md:text-4xl font-black mb-10 text-center text-slate-900">שאלות ששואלים אותנו</h2>
+        <div className="space-y-3 md:space-y-4">
+          {[
+            { q: "צריך ידע קודם?", a: "לא. הסדרה מתאימה גם למי שלא השתמשה כמעט בכלל בכלי AI. אנחנו מתחילים מהבסיס הפרקטי." },
+            { q: "צריך חשבון בתשלום?", a: "לא חובה. אפשר להתחיל עם גרסאות חינמיות, ונסביר במהלך המפגשים מה היתרון של גרסאות מתקדמות במידה ותרצי לשדרג בעתיד." },
+            { q: "זה מתאים גם לעצמאיות?", a: "מאוד. במיוחד אם את כותבת תוכן, בונה רעיונות, עובדת עם לקוחות או רוצה לשדרג את התוצרים שלך ולחסוך המון זמן." },
+            { q: "זה מתאים גם למי שלא טכנולוגית?", a: "בדיוק בשביל זה בנינו את הסדרה. פשוט, ברור, בגובה העיניים (כמו שלומדים לתלות מדף) ובלי להעמיס במושגים." },
+            { q: "איך עובד מודל 'שלמי כפי יכולתך'?", a: "במעמד התשלום תוכלי להקליד את הסכום שמתאים לך ב-₪. אין סכום מינימום. אנחנו סומכים על הקהילה." }
+          ].map((faq, index) => (
+            <div key={index} className={`glass-card rounded-2xl overflow-hidden transition-all duration-300 ${openFaq === index ? 'border-pink-200 bg-pink-50/50' : ''}`}>
+              <button 
+                onClick={() => toggleFaq(index)}
+                className="w-full text-right px-5 py-4 md:px-6 md:py-5 font-bold flex justify-between items-center text-base md:text-lg text-slate-800 outline-none"
+              >
+                {faq.q}
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all shrink-0 mr-3 ${openFaq === index ? 'bg-pink-500 text-white' : 'bg-slate-100 text-slate-500'}`}>
+                  {openFaq === index ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                </div>
+              </button>
+              <div 
+                className={`overflow-hidden transition-all duration-300 ${openFaq === index ? 'max-h-48 opacity-100' : 'max-h-0 opacity-0'}`}
+              >
+                <div className="px-5 pb-5 md:px-6 md:pb-6 text-slate-600 font-light leading-relaxed text-sm md:text-base">
+                  {faq.a}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* PAYMENT CTA (Replaced Registration Form) */}
+      <section id="register" className="py-20 md:py-24 px-4 md:px-6 z-10 relative">
+        <div className="max-w-2xl mx-auto glass-card rounded-[2rem] p-8 md:p-12 border border-pink-100 shadow-xl text-center reveal-on-scroll">
+          
+          <div className="mb-8 md:mb-10">
+            <h2 className="text-3xl md:text-4xl font-black mb-4 text-slate-900">רוצה להפסיק להסתכל מהצד?</h2>
+            <p className="text-slate-600 font-light mb-6 text-base md:text-lg">
+              הבטיחי את מקומך בסדנה עכשיו במודל "שלמי כפי יכולתך".
+            </p>
+            <div className="inline-block bg-pink-50 text-pink-600 text-sm font-bold px-4 py-1.5 rounded-full border border-pink-100">
+              מספר המקומות מוגבל
+            </div>
+          </div>
+
+          <a href={PAYMENT_LINK} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-3 bg-gradient-to-r from-pink-500 to-orange-500 hover:from-pink-600 hover:to-orange-600 text-white font-black text-xl md:text-2xl py-5 px-8 md:px-12 rounded-2xl shadow-lg hover:shadow-pink-500/30 transition-all transform hover:-translate-y-1 w-full md:w-auto">
+            מעבר לעמוד התשלום
+            <ArrowLeft className="w-6 h-6 md:w-7 md:h-7" />
+          </a>
+
+          <p className="mt-5 md:mt-6 text-slate-500 text-xs md:text-sm font-light">
+            לחיצה על הכפתור תעביר אותך לעמוד תשלום מאובטח ומהיר.
+          </p>
+        </div>
+      </section>
+
+      {/* FOOTER */}
+      <footer className="bg-slate-50 text-slate-500 py-8 md:py-10 text-center text-xs md:text-sm border-t border-slate-100 z-10 relative">
+        <div className="max-w-5xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
+          <p>© {new Date().getFullYear()} הנדית & PractiAI. כל הזכויות שמורות.</p>
+          <div className="flex gap-4 md:gap-6 font-medium">
+            <a href="https://www.handyt.co.il/" target="_blank" rel="noreferrer" className="hover:text-pink-500 transition-colors">האתר של קרין</a>
+            <a href="https://practiai.github.io/LP/" target="_blank" rel="noreferrer" className="hover:text-pink-500 transition-colors">האתר של טל</a>
+          </div>
+        </div>
+      </footer>
+
+    </div>
+  );
+};
+
+export default PremiumLandingPage;
